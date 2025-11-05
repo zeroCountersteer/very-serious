@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Пятница / Суббота — Спецэффекты</title>
+<style>
+:root{--bg1:#121321;--bg2:#1b0e2a;--accent:#8a2be2;--glow:#7cf3ff}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial}
+body{background:linear-gradient(120deg,var(--bg1),var(--bg2));overflow:hidden}
+.bg{
+  position:fixed;inset:0;z-index:-3;
+  background:radial-gradient(1200px 800px at 10% 10%,#2c0a83 0%,transparent 60%),
+             radial-gradient(900px 700px at 90% 20%,#0091ff33 0%,transparent 55%),
+             radial-gradient(800px 800px at 30% 90%,#ff3cac33 0%,transparent 60%);
+  filter:blur(20px) saturate(120%);
+  animation:bgShift 16s linear infinite alternate
+}
+@keyframes bgShift{to{transform:translate3d(10px,-10px,0) scale(1.03)}}
+.noise{position:fixed;inset:0;z-index:-2;pointer-events:none;background-image:repeating-conic-gradient(from 0deg,#0000 0deg 10deg,#0001 10deg 20deg);mix-blend-mode:overlay;opacity:.06;animation:spin 18s linear infinite}
+@keyframes spin{to{transform:rotate(1turn)}}
+.center{position:fixed;inset:0;display:grid;place-items:center;padding:24px}
+.card{
+  position:relative;display:grid;gap:18px;padding:28px 28px 34px;border-radius:20px;min-width:min(92vw,560px);
+  background:linear-gradient(180deg,#ffffff17,#ffffff07);
+  border:1px solid #ffffff24;backdrop-filter:blur(14px) saturate(160%);
+  box-shadow:0 10px 30px #0008,0 0 0 1px #ffffff10 inset
+}
+.title{font-weight:800;font-size:clamp(22px,5vw,32px);letter-spacing:.4px;color:#eef}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.toggle{
+  position:relative;display:inline-flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;cursor:pointer;user-select:none;
+  background:#0f102266;border:1px solid #ffffff1f;
+  box-shadow:0 8px 20px #0006,0 0 20px #000 inset;transition:.25s transform,.25s box-shadow
+}
+.toggle:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 12px 28px #0006,0 0 0 1px #ffffff14 inset}
+input[type=checkbox]{appearance:none;width:26px;height:26px;border-radius:8px;border:2px solid #9cf;display:grid;place-items:center;background:#0004;transition:.2s}
+input[type=checkbox]::after{content:"";width:16px;height:16px;border-radius:4px;background:conic-gradient(from 0deg,#8a2be2,#00e5ff,#ff3cac,#8a2be2);transform:scale(.0);transition:.2s}
+input[type=checkbox]:checked{border-color:#0ff;box-shadow:0 0 18px #3ff9}
+input[type=checkbox]:checked::after{transform:scale(1)}
+.label{font-weight:700;color:#eaf}
+.badge{margin-left:auto;padding:8px 12px;border-radius:999px;background:linear-gradient(90deg,#7cf3ff,#ff7de9);color:#101421;font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase}
+.big{font-size:clamp(36px,8vw,64px);font-weight:900;letter-spacing:1px;line-height:1.05;text-align:center;
+  background:linear-gradient(90deg,#cbe7ff,#fff,#ffd4ff,#cbe7ff);
+  -webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 10px 30px #0008)
+}
+.shine{position:absolute;inset:-4px;border-radius:22px;pointer-events:none;background:radial-gradient(500px 200px at var(--mx,50%) -30%,#ffffff66,transparent 60%);mix-blend-mode:screen;transition:.15s}
+.vignette{position:fixed;inset:0;pointer-events:none;box-shadow:inset 0 0 240px 60px #000a;z-index:5}
+canvas{position:fixed;inset:0;z-index:-1}
+.footer{display:flex;justify-content:center;gap:14px;opacity:.85}
+.btn{
+  appearance:none;border:0;cursor:pointer;border-radius:14px;padding:12px 16px;font-weight:800;letter-spacing:.3px;
+  background:linear-gradient(90deg,#243b55,#141e30);color:#e6f2ff;border:1px solid #ffffff1a;box-shadow:0 8px 20px #0006
+}
+.btn:active{transform:translateY(1px)}
+.pulse{position:absolute;inset:-16px;border-radius:28px;background:radial-gradient(120px 120px at 80% 30%,#00e6ff33,transparent 60%),radial-gradient(160px 120px at 30% 80%,#ff4dd233,transparent 55%);filter:blur(18px);opacity:.8;animation:pulse 3.6s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.02)}}
+.fridayGlow{box-shadow:0 0 30px #00eaffb0,0 0 120px #00eaff90 inset}
+.saturdayGlow{box-shadow:0 0 30px #ff7df0b0,0 0 120px #ff7df090 inset}
+.both{filter:drop-shadow(0 0 22px #0ff) drop-shadow(0 0 22px #ff7de9)}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="noise"></div>
+<canvas id="fx"></canvas>
+<div class="center">
+  <div class="card" id="card">
+    <div class="pulse"></div>
+    <div class="shine" id="shine"></div>
+    <div class="title">Выходные подходят?</div>
+    <div class="row">
+      <label class="toggle"><input id="fri" type="checkbox"/><span class="label">Пятница</span></label>
+      <label class="toggle"><input id="sat" type="checkbox"/><span class="label">Суббота</span></label>
+      <div class="badge" id="badge">Готов к шоу</div>
+    </div>
+    <div class="big" id="headline">Выберите день</div>
+    <div class="footer">
+      <button class="btn" id="burst">Салют</button>
+      <button class="btn" id="disco">Диско</button>
+      <button class="btn" id="clear">Очистить</button>
+    </div>
+  </div>
+</div>
+<div class="vignette"></div>
+<script>
+const c=document.getElementById('fx'),x=c.getContext('2d',{alpha:true});let W=innerWidth,H=innerHeight;const dpr=devicePixelRatio||1;function rs(){W=innerWidth;H=innerHeight;c.width=W*dpr;c.height=H*dpr;c.style.width=W+'px';c.style.height=H+'px';x.setTransform(dpr,0,0,dpr,0,0)}rs();addEventListener('resize',rs);
+const R=n=>Math.random()*n,F=(a,b)=>a+Math.random()*(b-a),TAU=Math.PI*2,HH=()=>`hsl(${Math.floor(R(360))} 90% 60%)`;
+const baseParticles=[],confetti=[],sparks=[],beams=[];let t0=performance.now(),hue=0,discoOn=false,tilt={x:0,y:0};
+for(let i=0;i<120;i++)baseParticles.push({x:R(W),y:R(H),vx:F(-.3,.3),vy:F(.1,.8),r:F(.4,2.4),a:F(.2,.7),h:R(360)});
+function baseUpdate(p){p.x+=p.vx;p.y+=p.vy;if(p.y>H){p.y=-10;p.x=R(W)}if(p.x<0||p.x>W)p.vx*=-1}
+function drawBase(p){x.globalAlpha=p.a;x.fillStyle=`hsl(${(p.h+=.2)%360} 80% 62%)`;x.beginPath();x.arc(p.x,p.y,p.r,0,TAU);x.fill()}
+function burst(x0,y0,cnt=180,speed=9,spread=TAU,arr=confetti){for(let i=0;i<cnt;i++){const ang=R(spread),sp=F(.3,1)*speed,sz=F(2,4),g=F(.02,.055);arr.push({x:x0,y:y0,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp-2,sz,rot:R(TAU),vr:F(-.2,.2),life:1.2,decay:F(.008,.02),col:HH(),g})}}
+function firework(){const x0=F(W*.2,W*.8),y0=F(H*.1,H*.4);beams.push({x:x0,y:H+10,vy:F(-9,-12),x0,y0,phase:0})
+}
+function updateConfetti(p){p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.rot+=p.vr;p.life-=p.decay}
+function drawConfetti(p){x.save();x.translate(p.x,p.y);x.rotate(p.rot);x.globalAlpha=Math.max(p.life,0);x.fillStyle=p.col;x.fillRect(-p.sz*.8,-p.sz*.4,p.sz*1.6,p.sz*.8);x.restore()}
+function updateBeam(b){if(b.phase===0){b.y+=b.vy;x.globalCompositeOperation='lighter';x.fillStyle=`hsl(${(hue+60)%360} 90% 60%)`;x.globalAlpha=.5;x.fillRect(b.x-1,b.y,2,12);if(b.y<=b.y0){b.phase=1;burst(b.x,b.y,220,10,TAU,sparks)}}}
+function drawSpark(p){x.globalCompositeOperation='lighter';x.globalAlpha=Math.max(p.life,0);x.fillStyle=p.col;x.beginPath();x.arc(p.x,p.y,p.sz*.8,0,TAU);x.fill()}
+function animate(ts){const dt=(ts-t0)/1000;t0=ts;hue=(hue+60*dt)%360;x.clearRect(0,0,W,H);x.globalCompositeOperation='source-over';baseParticles.forEach(p=>{baseUpdate(p);drawBase(p)});
+confetti.forEach((p,i)=>{updateConfetti(p);drawConfetti(p);if(p.life<=0||p.y>H+40)confetti.splice(i,1)});
+sparks.forEach((p,i)=>{updateConfetti(p);drawSpark(p);if(p.life<=0||p.y>H+40)sparks.splice(i,1)});
+beams.forEach((b,i)=>{updateBeam(b);if(b.phase===1&&Math.random()<.18)beams.splice(i,1)});
+if(discoOn){x.globalCompositeOperation='overlay';x.globalAlpha=.25;x.fillStyle=`hsl(${(hue*4)%360} 100% 60%)`;const s=160;for(let i=0;i<W;i+=s){x.fillRect(i,0,s/2,H)}}
+requestAnimationFrame(animate)}
+requestAnimationFrame(animate);
+const card=document.getElementById('card'),shine=document.getElementById('shine'),headline=document.getElementById('headline'),badge=document.getElementById('badge'),fri=document.getElementById('fri'),sat=document.getElementById('sat');
+function setState(){const f=fri.checked,s=sat.checked;card.classList.toggle('fridayGlow',f);card.classList.toggle('saturdayGlow',s);headline.classList.toggle('both',f&&s);
+if(f&&s){headline.textContent='УИ-ХА! Пятница + Суббота';badge.textContent='Двойной режим';for(let i=0;i<3;i++)firework();burst(W*.5,H*.32,300,12)}
+else if(f){headline.textContent='Пятница!';badge.textContent='Конфетти';burst(W*.5,H*.35,220,8,Math.PI*2)}
+else if(s){headline.textContent='Суббота!';badge.textContent='Фейерверки';firework();firework()}
+else{headline.textContent='Выберите день';badge.textContent='Готов к шоу'}}
+fri.addEventListener('change',setState);sat.addEventListener('change',setState);
+card.addEventListener('pointermove',e=>{const r=card.getBoundingClientRect(),mx=(e.clientX-r.left)/r.width,my=(e.clientY-r.top)/r.height;tilt.x=(mx-.5)*10;tilt.y=(.5-my)*10;card.style.transform=`rotateX(${tilt.y}deg) rotateY(${tilt.x}deg)`;shine.style.setProperty('--mx',mx*100+'%')});
+card.addEventListener('pointerleave',()=>{card.style.transform='none'});
+document.getElementById('burst').addEventListener('click',()=>burst(F(W*.2,W*.8),F(H*.2,H*.5),240,10));
+document.getElementById('disco').addEventListener('click',()=>{discoOn=!discoOn;badge.textContent=discoOn?'Диско включено':'Готов к шоу'});
+document.getElementById('clear').addEventListener('click',()=>{confetti.length=0;sparks.length=0;beams.length=0});
+addEventListener('pointerdown',e=>burst(e.clientX,e.clientY,200,9));
+addEventListener('keydown',e=>{if(e.key.toLowerCase()==='f')fri.checked=!fri.checked;if(e.key.toLowerCase()==='s')sat.checked=!sat.checked;setState()});
+setState();
+</script>
+</body>
+</html>
